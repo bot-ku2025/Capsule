@@ -25,13 +25,18 @@ jobs:
         packages: 'platforms;android-34 build-tools;34.0.0'
         accept-android-sdk-licenses: true
 
+    - name: Configure Android SDK Path
+      run: |
+        echo "ANDROID_HOME=$ANDROID_SDK_ROOT" >> $GITHUB_ENV
+        echo "sdk.dir=$ANDROID_SDK_ROOT" > local.properties
+
     - name: Download and Setup Gradle 8.0
       run: |
         wget -q https://services.gradle.org/distributions/gradle-8.0-bin.zip
         unzip -q gradle-8.0-bin.zip
         echo "$PWD/gradle-8.0/bin" >> $GITHUB_PATH
 
-    - name: Generate Gradle Wrapper and Build APK
+    - name: Build Debug APK with Gradle
       run: |
         gradle wrapper --gradle-version 8.0
         chmod +x gradlew
