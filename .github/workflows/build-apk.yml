@@ -25,24 +25,19 @@ jobs:
         packages: 'platforms;android-34 build-tools;34.0.0'
         accept-android-sdk-licenses: true
 
-    - name: Install System Dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y gradle unzip
+    - name: Setup SDK Path
+      run: echo "sdk.dir=$ANDROID_SDK_ROOT" > local.properties
 
-    - name: Configure Local Properties
+    - name: Install Modern Gradle 8.4
       run: |
-        echo "sdk.dir=$ANDROID_SDK_ROOT" > local.properties
+        wget -q https://services.gradle.org/distributions/gradle-8.4-bin.zip -O gradle.zip
+        unzip -q gradle.zip
+        echo "$PWD/gradle-8.4/bin" >> $GITHUB_PATH
 
-    - name: Build APK with Gradle
-      run: |
-        if [ ! -f ./gradlew ]; then
-          gradle wrapper --gradle-version 8.0
-        fi
-        chmod +x gradlew
-        ./gradlew assembleDebug --stacktrace
-
-    - name: Upload APK Artifact
+    - name: Build APK (Bypass Local Wrapper)
+      run: gradle assembleDebug --stacktrace
+      
+    - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
         name: capsule-debug-apk
