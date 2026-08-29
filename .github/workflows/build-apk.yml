@@ -18,13 +18,12 @@ jobs:
       with:
         distribution: 'temurin'
         java-version: '17'
-        cache: 'gradle'
 
-    - name: Set up Gradle Wrapper (Auto-fallback)
-      uses: gradle/actions/setup-gradle@v3
+    - name: Install Gradle
+      run: sudo apt-get update && sudo apt-get install -y gradle
 
     - name: Build Debug APK with Gradle
-      run: ./gradlew assembleDebug
+      run: gradle assembleDebug
 
     - name: Upload APK Artifact
       uses: actions/upload-artifact@v4
