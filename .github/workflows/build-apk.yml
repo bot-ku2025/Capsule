@@ -25,20 +25,20 @@ jobs:
         packages: 'platforms;android-34 build-tools;34.0.0'
         accept-android-sdk-licenses: true
 
-    - name: Configure Android SDK Path
+    - name: Install System Dependencies
       run: |
-        echo "ANDROID_HOME=$ANDROID_SDK_ROOT" >> $GITHUB_ENV
+        sudo apt-get update
+        sudo apt-get install -y gradle unzip
+
+    - name: Configure Local Properties
+      run: |
         echo "sdk.dir=$ANDROID_SDK_ROOT" > local.properties
 
-    - name: Install Gradle Manually
+    - name: Build APK with Gradle
       run: |
-        wget -q https://services.gradle.org/distributions/gradle-8.0-bin.zip
-        unzip -q gradle-8.0-bin.zip
-        echo "$PWD/gradle-8.0/bin" >> $GITHUB_PATH
-
-    - name: Generate Wrapper and Build APK
-      run: |
-        gradle wrapper --gradle-version 8.0
+        if [ ! -f ./gradlew ]; then
+          gradle wrapper --gradle-version 8.0
+        fi
         chmod +x gradlew
         ./gradlew assembleDebug --stacktrace
 
