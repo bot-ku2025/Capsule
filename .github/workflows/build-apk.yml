@@ -1,4 +1,4 @@
-name: Build Capsule APK
+name: Build Capsule v2 APK
 
 on:
   push:
@@ -42,5 +42,5 @@ jobs:
     - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
-        name: capsule-debug-apk
+        name: capsule-v2-debug-apk
         path: app/build/outputs/apk/debug/app-debug.apk
