@@ -25,8 +25,10 @@ jobs:
         packages: 'platforms;android-34 build-tools;34.0.0'
         accept-android-sdk-licenses: true
 
-    - name: Setup SDK Path
-      run: echo "sdk.dir=$ANDROID_SDK_ROOT" > local.properties
+    - name: Setup Environment & Suppress SDK Warning
+      run: |
+        echo "sdk.dir=$ANDROID_SDK_ROOT" > local.properties
+        echo "android.suppressUnsupportedCompileSdk=34" >> gradle.properties
 
     - name: Install Modern Gradle 8.4
       run: |
@@ -34,7 +36,7 @@ jobs:
         unzip -q gradle.zip
         echo "$PWD/gradle-8.4/bin" >> $GITHUB_PATH
 
-    - name: Build APK (Bypass Local Wrapper)
+    - name: Build APK
       run: gradle assembleDebug --stacktrace
       
     - name: Upload APK
