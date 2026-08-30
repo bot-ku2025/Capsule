@@ -1,68 +1,52 @@
 package com.capsule.app
 
+import android.app.admin.DevicePolicyManager
+import android.content.ComponentName
+import android.content.Context
 import android.content.Intent
-import android.net.Uri
-import android.os.Build
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
-import android.provider.Settings
+import android.widget.Button
+import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import java.util.concurrent.ExecutorService
-import java.util.concurrent.Executors
 
 class MainActivity : AppCompatActivity() {
 
-    private lateinit var statusTextView: TextView
-    private val executor: ExecutorService = Executors.newSingleThreadExecutor()
-    private val mainHandler = Handler(Looper.getMainLooper())
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        
-        // UI Darurat Asinkron agar tidak memblokir Main Thread
-        statusTextView = TextView(this).apply {
-            text = "CAPSULE CORE\nInitializing Async Sandbox Engine..."
-            textSize = 18f
+
+        val layout = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
             setPadding(50, 100, 50, 50)
         }
-        setContentView(statusTextView)
 
-        checkOverlayPermission()
-        startAsyncSandboxInitialization()
-    }
-
-    private fun checkOverlayPermission() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(this)) {
-            val intent = Intent(
-                Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-                Uri.parse("package:$packageName")
-            )
-            startActivityForResult(intent, 1234)
+        val title = TextView(this).apply {
+            text = "CAPSULE CORE"
+            textSize = 24f
+            setPadding(0, 0, 0, 50)
         }
+
+        val btnCreateSandbox = Button(this).apply {
+            text = "BUAT SANDBOX (ISLAND MODE)"
+            setOnClickListener { setupWorkProfile() }
+        }
+
+        layout.addView(title)
+        layout.addView(btnCreateSandbox)
+        setContentView(layout)
     }
 
-    private fun startAsyncSandboxInitialization() {
-        // Mencegah Freeze dengan Background Thread
-        executor.execute {
-            try {
-                // Simulasi Inisialisasi Isolasi Kontainer
-                Thread.sleep(1500) 
+    private fun setupWorkProfile() {
+        val componentName = ComponentName(this, CapsuleDeviceAdminReceiver::class.java)
+        val intent = Intent(DevicePolicyManager.ACTION_PROVISION_MANAGED_PROFILE).apply {
+            putExtra(DevicePolicyManager.EXTRA_PROVISIONING_DEVICE_ADMIN_COMPONENT_NAME, componentName)
+        }
 
-                mainHandler.post {
-                    statusTextView.text = "CAPSULE CORE - ACTIVE\n\n" +
-                            "• Multi-Profile Sandbox: Ready\n" +
-                            "• Floating Window Overlay: Active\n" +
-                            "• Network & Identity Automation: Standby"
-                    Toast.makeText(this@MainActivity, "Capsule Engine Active", Toast.LENGTH_SHORT).show()
-                }
-            } catch (e: Exception) {
-                mainHandler.post {
-                    statusTextView.text = "CAPSULE CORE ERROR:\n${e.localizedMessage}"
-                }
-            }
+        if (intent.resolveActivity(packageManager) != null) {
+            startActivityForResult(intent, 1)
+        } else {
+            Toast.makeText(this, "Perangkat ini tidak mendukung fitur Sandbox/Work Profile", Toast.LENGTH_LONG).show()
         }
     }
 }
